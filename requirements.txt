@@ -1,0 +1,5 @@
+google-cloud-datastore==1.4.0
+google-cloud-storage==1.7.0
+google-cloud-logging==1.4.0
+google-cloud-error_reporting==0.29.0
+redis==2.10.6

@@ -1,0 +1,14 @@
+.idea/
+venv/*
+SensorProcessor.egg-info
+build/
+dist/
+
+# Tests
+.pytest_cache/
+
+configs/
+
+* Logging
+app.log.*
+app.log
