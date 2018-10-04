@@ -7,7 +7,5 @@ setup(
     python_requires='>=2.7, <3',
     packages=find_packages(),
     tests_require=['pytest==3.0.3'],
-    install_requires=['google-cloud==0.34.0',
-                      'google-api-python-client'
-                      ]
+    install_requires=['redis==2.10.6']
 )
