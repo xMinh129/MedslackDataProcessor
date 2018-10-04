@@ -14,15 +14,16 @@ class Listener(threading.Thread):
 
     def work(self, item):
         try:
-            data = json.loads(item['data'])
-            if item['channel'] == 'heart_rate':
-                headers = {'data_type': 'heart_rate', 'deviceID': DEVICE['deviceID'], 'password': DEVICE['password']}
-                new_data = requests.post('http://localhost:5010/api/data/new', json=data, headers=headers)
-            elif item['channel'] == 'blood_pressure':
-                headers = {'data_type': 'blood_pressure', 'deviceID': DEVICE['deviceID'],
-                           'password': DEVICE['password']}
-                new_data = requests.post('http://localhost:5010/api/data/new', json=data, headers=headers)
-            print new_data
+            data_from_queue = json.loads(item['data'])
+            # TODO to send data to our backend
+            # if item['channel'] == 'heart_rate':
+            #     headers = {'data_type': 'heart_rate', 'deviceID': DEVICE['deviceID'], 'password': DEVICE['password']}
+            # elif item['channel'] == 'blood_pressure':
+            #     headers = {'data_type': 'blood_pressure', 'deviceID': DEVICE['deviceID'],
+            #                'password': DEVICE['password']}
+            # response = requests.post('http://localhost:5010/api/data/new', json=data_from_queue, headers=headers)
+            # TODO to print the result from post request
+            print data_from_queue
         except Exception as e:
             print e
 
