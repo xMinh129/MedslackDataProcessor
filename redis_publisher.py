@@ -26,11 +26,12 @@ os.environ['NO_PROXY'] = '127.0.0.1'
 
 def add_vital_data_to_queue(stats_session, vital):
     queue_data = {
-        "statsSession": stats_session,
-        "time": str(datetime.datetime.now()),
-        "stats": vital
+        "sessionID": stats_session,
+        "dateTime": str(datetime.datetime.now()),
+        "stats": vital,
+        "patientID": "G109876R"
     }
-    r.publish('blood_pressure', json.dumps(queue_data))
+    r.publish('spo2', json.dumps(queue_data))
 
 
 if __name__ == '__main__':
@@ -43,4 +44,4 @@ if __name__ == '__main__':
     # Add vital data to queue
     # TODO to change the stats session id
     while status:
-        add_vital_data_to_queue("1234", randint(0, 9))
+        add_vital_data_to_queue("1234", randint(0, 90))

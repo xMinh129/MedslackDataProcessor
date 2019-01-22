@@ -4,6 +4,7 @@ import json
 import requests
 #from configs.device_config import DEVICE
 
+
 import redis
 
 config = {
@@ -25,16 +26,15 @@ class Listener(threading.Thread):
     def work(self, item):
         try:
             data_from_queue = json.loads(item['data'])
-            # TODO to send data to our backend
-            # if item['channel'] == 'heart_rate':
-            #     headers = {'data_type': 'heart_rate', 'deviceID': DEVICE['deviceID']}
-            # elif item['channel'] == 'spo2':
-            #     headers = {'data_type': 'spo2', 'deviceID': DEVICE['deviceID']}
-            # response = requests.post('http://localhost:5010/api/data/new', json=data_from_queue, headers=headers)
-            # TODO to print the result from post request
-            print data_from_queue
+            print(data_from_queue)
+            if item['channel'].decode("utf-8") == 'heart_rate':
+                headers = {'data_type': 'heart_rate'}
+            elif item['channel'].decode("utf-8") == 'spo2':
+                headers = {'data_type': 'spo2'}
+            response = requests.post('http://34.85.45.103:5010/api/stats/new', json=data_from_queue, headers=headers)
+            print(response)
         except Exception as e:
-            print e
+            print(e)
 
     def run(self):
         for item in self.pubsub.listen():
