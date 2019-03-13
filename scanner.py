@@ -65,7 +65,7 @@ def main():
     #deviceID = sys.argv[1]
     deviceID = 'E5:B0:E7:54:53:86'
     #deviceNAME = u'4F58494D45544552'
-    deviceNAME = 'OXIMETER'.encode('utf-8').hex().upper()
+    deviceNAME = 'OX'.encode('utf-8').hex().upper()
     #TODO: PASS A SESSION ID VIA THE SENSOR
     scanner = BLEScanner()
     scanner.start()
@@ -79,10 +79,10 @@ def main():
                 mac = ':'.join (a+b for a,b in zip(reversed_mac[::2], reversed_mac[1::2]))
                 data = line[26:]
                 if mac == deviceID:
-                    print(mac, data)
+                    #print(mac, data)
                     if deviceNAME in data:
-                        data2 = data[(len(data)-6):(len(data)-2)]
-                        print(data2)
+                        data2 = data[20:24]
+                        #print(data2)
                         HR = int(data2[0:2], 16)
                         OX = int(data2[2:4], 16)
                         Heart_Rate = {"value": HR, "type": 'hr', "time": str(datetime.now())}
