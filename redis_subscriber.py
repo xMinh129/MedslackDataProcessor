@@ -31,7 +31,7 @@ class Listener(threading.Thread):
                 headers = {'data_type': 'heart_rate'}
             elif item['channel'].decode("utf-8") == 'spo2':
                 headers = {'data_type': 'spo2'}
-            response = requests.post('http://localhost:5010/api/stats/new', json=data_from_queue, headers=headers)
+            response = requests.post('http://35.240.193.146:5010/api/stats/new', json=data_from_queue, headers=headers)
             print(response)
         except Exception as e:
             print(e)
