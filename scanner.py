@@ -63,7 +63,7 @@ def main():
     print('starting...')
 
     #deviceID = sys.argv[1]
-    deviceID = 'E5:B0:E7:54:53:86'
+    deviceID = 'D0:2B:91:3E:5B:D0'
     #deviceNAME = u'4F58494D45544552'
     deviceNAME = 'OX'.encode('utf-8').hex().upper()
     #TODO: PASS A SESSION ID VIA THE SENSOR
@@ -85,6 +85,7 @@ def main():
                         #print(data2)
                         HR = int(data2[0:2], 16)
                         OX = int(data2[2:4], 16)
+                        print("HeartRate=",HR,"SpO2=",OX)
                         Heart_Rate = {"stats": HR, "type": 'hr', 'sessionID': '12345678', "dateTime": str(datetime.now())}
                         SpO2 = {"stats": OX, "type": 'spo2', 'sessionID': '12345678',  "dateTime": str(datetime.now())}
                         r.publish('heart_rate', json.dumps(Heart_Rate))
