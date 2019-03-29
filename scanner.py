@@ -85,17 +85,12 @@ def main():
                         #print(data2)
                         HR = int(data2[0:2], 16)
                         OX = int(data2[2:4], 16)
-                        Heart_Rate = {"value": HR, "type": 'hr', "time": str(datetime.now())}
-                        SpO2 = {"value": OX, "type": 'spo2', "time": str(datetime.now())}
+                        Heart_Rate = {"stats": HR, "type": 'hr', 'sessionID': '12345678', "dateTime": str(datetime.now())}
+                        SpO2 = {"stats": OX, "type": 'spo2', 'sessionID': '12345678',  "dateTime": str(datetime.now())}
                         r.publish('heart_rate', json.dumps(Heart_Rate))
                         r.publish('spo2', json.dumps(SpO2))
-                        #print(json.dumps(HR))
-                        #print(json.dumps(OX))
-                            
-
         scanner.stop()
         exit(0)
-        
 
 
 if __name__ == '__main__':
