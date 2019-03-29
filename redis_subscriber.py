@@ -25,14 +25,17 @@ class Listener(threading.Thread):
 
     def work(self, item):
         try:
-            data_from_queue = json.loads(item['data'])
+            data_from_queue = json.loads(item['data'].decode('utf-8'))
             print(data_from_queue)
             if item['channel'].decode("utf-8") == 'heart_rate':
                 headers = {'data_type': 'heart_rate'}
             elif item['channel'].decode("utf-8") == 'spo2':
                 headers = {'data_type': 'spo2'}
-            response = requests.post('http://35.240.193.146:5010/api/stats/new', json=data_from_queue, headers=headers)
-            print(response)
+            try:
+                response = requests.post('http://35.240.193.146:5010/api/stats/new', json=data_from_queue, headers=headers)
+                print(response)
+            except Exception as e:
+                print(e)
         except Exception as e:
             print(e)
 
