@@ -1,3 +1,4 @@
+import re
 import sys
 import os
 from datetime import datetime
@@ -68,21 +69,21 @@ def main():
 
     # Start a new session when device start
     current_date = datetime.now()
-    sessionID = deviceID.replace(':', '_') + '_' + current_date.strftime('%Y%m%d%H%M')
+    sessionID = deviceID + '_' + current_date.strftime('%Y%m%d%H%M')
     session_info = {
         'deviceID': deviceID,
         'sessionID': sessionID,
-        'date': current_date
+        'date': str(current_date)
     }
 
     # Create a new session
-    headers = {'device_authorization': 'easy_nmr_129'}
-    r = requests.post('http://35.240.193.146:5010/api/session/new', json=session_info, headers=headers)
+    new_session = requests.post('http://35.240.193.146:5010/api/session/new', json=session_info)
 
     scanner = BLEScanner()
     scanner.start()
 
     data = None
+    i = 0
 
     while True:
         for line in scanner.get_lines():
@@ -103,10 +104,13 @@ def main():
                             Heart_Rate = {"stats": HR, "type": 'hr', 'sessionID': sessionID,
                                           "dateTime": str(datetime.now()), 'deviceID': deviceID}
                             r.publish('heart_rate', json.dumps(Heart_Rate))
+                            i+=1
                         if OX != 255:
                             SpO2 = {"stats": OX, "type": 'spo2', 'sessionID': sessionID,
                                     "dateTime": str(datetime.now()), 'deviceID': deviceID}
                             r.publish('spo2', json.dumps(SpO2))
+                            i+=1
+        print(i)
         scanner.stop()
         exit(0)
 
