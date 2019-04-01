@@ -1,9 +1,6 @@
-#from configs.redis_config import r
 import threading
 import json
 import requests
-#from configs.device_config import DEVICE
-
 
 import redis
 
@@ -11,7 +8,7 @@ config = {
     'host': 'localhost',
     'port': 6379,
     'db': 0
-    }
+}
 
 r = redis.StrictRedis(**config)
 
@@ -22,26 +19,70 @@ class Listener(threading.Thread):
         self.redis = r
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe(channels)
+        self.hr_dataset = []
+        self.spo2_dataset = []
 
     def work(self, item):
         try:
             data_from_queue = json.loads(item['data'].decode('utf-8'))
             print(data_from_queue)
+
             if item['channel'].decode("utf-8") == 'heart_rate':
-                headers = {'data_type': 'heart_rate'}
+                self.hr_dataset.append(data_from_queue)
+                # Sending data in chunks of 100 data points per API request
+                if len(self.hr_dataset) >= 100:
+                    try:
+                        headers = {'data_type': 'heart_rate'}
+                        response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.hr_dataset,
+                                                 headers=headers)
+                        print('Response code: ' + response.status_code)
+                        if response.status_code != 200:
+                            for i in self.hr_dataset:
+                                r.publish('heart_rate', i)
+                                print('Error in sending. Data was put back on redis queue')
+                            self.hr_dataset = []
+                    except Exception as e:
+                        print(e)
+                        for i in self.hr_dataset:
+                            r.publish('heart_rate', i)
+                            print('Error in sending. Data was put back on redis queue')
+                        self.hr_dataset = []
+
             elif item['channel'].decode("utf-8") == 'spo2':
-                headers = {'data_type': 'spo2'}
-            try:
-                response = requests.post('http://35.240.193.146:5010/api/stats/new', json=data_from_queue, headers=headers)
-                print(response)
-            except Exception as e:
-                print(e)
+                self.spo2_dataset.append(data_from_queue)
+                # Sending data in chunks of 100 data points per API request
+                if len(self.spo2_dataset) >= 100:
+                    try:
+                        headers = {'data_type': 'spo2'}
+                        response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.spo2_dataset,
+                                                 headers=headers)
+                        print('Response code: ' + response.status_code)
+                        if response.status_code != 200:
+                            for i in self.spo2_dataset:
+                                r.publish('spo2', i)
+                                print('Error in sending. Data was put back on redis queue')
+                            self.spo2_dataset = []
+                    except Exception as e:
+                        print(e)
+                        for i in self.spo2_dataset:
+                            r.publish('spo2', i)
+                            print('Error in sending. Data was put back on redis queue')
+                        self.spo2_dataset = []
+
         except Exception as e:
             print(e)
 
     def run(self):
         for item in self.pubsub.listen():
             self.work(item)
+        if self.hr_dataset:
+            headers = {'data_type': 'heart_rate'}
+            requests.post('http://35.240.193.146:5010/api/stats/new', json=self.hr_dataset,
+                          headers=headers)
+        if self.hr_dataset:
+            headers = {'data_type': 'spo2'}
+            requests.post('http://35.240.193.146:5010/api/stats/new', json=self.spo2_dataset,
+                          headers=headers)
 
 
 if __name__ == "__main__":
