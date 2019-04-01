@@ -1,4 +1,3 @@
-import re
 import sys
 import os
 from datetime import datetime
@@ -69,7 +68,7 @@ def main():
 
     # Start a new session when device start
     current_date = datetime.now()
-    sessionID = deviceID + '_' + current_date.strftime('%Y%m%d%H%M')
+    sessionID = deviceID.replace(':', '_') + '_' + current_date.strftime('%Y%m%d%H%M')
     session_info = {
         'deviceID': deviceID,
         'sessionID': sessionID,
@@ -77,7 +76,8 @@ def main():
     }
 
     # Create a new session
-    r = requests.post('http://35.240.193.146:5010/api/session/new', json=session_info)
+    headers = {'device_authorization': 'easy_nmr_129'}
+    r = requests.post('http://35.240.193.146:5010/api/session/new', json=session_info, headers=headers)
 
     scanner = BLEScanner()
     scanner.start()

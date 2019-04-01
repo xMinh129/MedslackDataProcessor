@@ -32,7 +32,7 @@ class Listener(threading.Thread):
                 # Sending data in chunks of 100 data points per API request
                 if len(self.hr_dataset) >= 100:
                     try:
-                        headers = {'data_type': 'heart_rate'}
+                        headers = {'data_type': 'heart_rate', 'device_authorization': 'easy_nmr_129'}
                         response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.hr_dataset,
                                                  headers=headers)
                         print('Response code: ' + response.status_code)
@@ -55,7 +55,7 @@ class Listener(threading.Thread):
                 # Sending data in chunks of 100 data points per API request
                 if len(self.spo2_dataset) >= 100:
                     try:
-                        headers = {'data_type': 'spo2'}
+                        headers = {'data_type': 'spo2', 'device_authorization': 'easy_nmr_129'}
                         response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.spo2_dataset,
                                                  headers=headers)
                         print('Response code: ' + response.status_code)
