@@ -41,6 +41,8 @@ class Listener(threading.Thread):
                                 r.publish('heart_rate', i)
                                 print('Error in sending. Data was put back on redis queue')
                             self.hr_dataset = []
+                        else:
+                            self.hr_dataset = []
                     except Exception as e:
                         print(e)
                         for i in self.hr_dataset:
@@ -61,6 +63,8 @@ class Listener(threading.Thread):
                             for i in self.spo2_dataset:
                                 r.publish('spo2', i)
                                 print('Error in sending. Data was put back on redis queue')
+                            self.spo2_dataset = []
+                        else:
                             self.spo2_dataset = []
                     except Exception as e:
                         print(e)
