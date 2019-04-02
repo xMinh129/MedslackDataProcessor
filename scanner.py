@@ -104,12 +104,12 @@ def main():
                             Heart_Rate = {"stats": HR, "type": 'hr', 'sessionID': sessionID,
                                           "dateTime": str(datetime.now()), 'deviceID': deviceID}
                             r.publish('heart_rate', json.dumps(Heart_Rate))
-                            i+=1
+                            i += 1
                         if OX != 255:
                             SpO2 = {"stats": OX, "type": 'spo2', 'sessionID': sessionID,
                                     "dateTime": str(datetime.now()), 'deviceID': deviceID}
                             r.publish('spo2', json.dumps(SpO2))
-                            i+=1
+                            i += 1
         print(i)
         scanner.stop()
         exit(0)

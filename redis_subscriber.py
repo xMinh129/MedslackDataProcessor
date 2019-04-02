@@ -1,6 +1,8 @@
 import threading
 import json
 import requests
+from flask import json
+from cryptography.fernet import Fernet
 
 import redis
 
@@ -12,6 +14,16 @@ config = {
 
 r = redis.StrictRedis(**config)
 
+file = open('./secret/secret.json')
+encrypt_key = json.loads(file.read())['DATA_ENCRYPT_KEY']  # The key will be type bytes
+file.close()
+
+
+def _encrypt_data(data):
+    f = Fernet(encrypt_key)
+    encrypted_data = f.encrypt(json.dumps(data).encode())
+    return encrypted_data
+
 
 class Listener(threading.Thread):
     def __init__(self, r, channels):
@@ -21,7 +33,7 @@ class Listener(threading.Thread):
         self.pubsub.subscribe(channels)
         self.hr_dataset = []
         self.spo2_dataset = []
-        
+
     def work(self, item):
         try:
             data_from_queue = json.loads(item['data'].decode('utf-8'))
@@ -33,7 +45,8 @@ class Listener(threading.Thread):
                 if len(self.hr_dataset) >= 20:
                     try:
                         headers = {'data_type': 'heart_rate'}
-                        response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.hr_dataset,
+                        response = requests.post('http://35.240.193.146:5010/api/stats/new',
+                                                 data=_encrypt_data(self.hr_dataset),
                                                  headers=headers)
                         print('Response code: ' + str(response.status_code))
                         if response.status_code != 200:
@@ -56,7 +69,8 @@ class Listener(threading.Thread):
                 if len(self.spo2_dataset) >= 20:
                     try:
                         headers = {'data_type': 'spo2'}
-                        response = requests.post('http://35.240.193.146:5010/api/stats/new', json=self.spo2_dataset,
+                        response = requests.post('http://35.240.193.146:5010/api/stats/new',
+                                                 data=_encrypt_data(self.spo2_dataset),
                                                  headers=headers)
                         print('Response code: ' + str(response.status_code))
                         if response.status_code != 200:
@@ -80,10 +94,9 @@ class Listener(threading.Thread):
         i = 0
         for item in self.pubsub.listen():
             self.work(item)
-            i+=1
+            i += 1
         print("All data in queue are clear")
         print(i)
-        
 
 
 if __name__ == "__main__":

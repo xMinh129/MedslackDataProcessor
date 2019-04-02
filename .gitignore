@@ -12,3 +12,6 @@ configs/
 * Logging
 app.log.*
 app.log
+
+# Secret
+.secret/
