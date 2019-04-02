@@ -14,13 +14,13 @@ config = {
 
 r = redis.StrictRedis(**config)
 
-file = open('./secret/secret.json')
-encrypt_key = json.loads(file.read())['DATA_ENCRYPT_KEY']  # The key will be type bytes
-file.close()
+file = open('.secret/secret.json').read()
+DATA_ENCRYPT_KEY = json.loads(file)['DATA_ENCRYPT_KEY']  # The key will be type bytes
+DEVICE_AUTH_CODE = json.loads(file)['DEVICE_AUTH_CODE']
 
 
 def _encrypt_data(data):
-    f = Fernet(encrypt_key)
+    f = Fernet(DATA_ENCRYPT_KEY)
     encrypted_data = f.encrypt(json.dumps(data).encode())
     return encrypted_data
 
@@ -44,7 +44,7 @@ class Listener(threading.Thread):
                 # Sending data in chunks of 100 data points per API request
                 if len(self.hr_dataset) >= 20:
                     try:
-                        headers = {'data_type': 'heart_rate'}
+                        headers = {'data_type': 'heart_rate', 'Authorization': DEVICE_AUTH_CODE}
                         response = requests.post('http://35.240.193.146:5010/api/stats/new',
                                                  data=_encrypt_data(self.hr_dataset),
                                                  headers=headers)
@@ -68,7 +68,7 @@ class Listener(threading.Thread):
                 # Sending data in chunks of 100 data points per API request
                 if len(self.spo2_dataset) >= 20:
                     try:
-                        headers = {'data_type': 'spo2'}
+                        headers = {'data_type': 'spo2',  'Authorization': DEVICE_AUTH_CODE}
                         response = requests.post('http://35.240.193.146:5010/api/stats/new',
                                                  data=_encrypt_data(self.spo2_dataset),
                                                  headers=headers)
