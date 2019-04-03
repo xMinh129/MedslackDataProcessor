@@ -1,4 +1,3 @@
-import re
 import sys
 import os
 from datetime import datetime
@@ -14,6 +13,9 @@ config = {
 }
 
 r = redis.StrictRedis(**config)
+
+file = open('.secret/secret.json').read()
+DEVICE_AUTH_CODE = json.loads(file)['DEVICE_AUTH_CODE']
 
 
 class BLEScanner:
@@ -75,9 +77,10 @@ def main():
         'sessionID': sessionID,
         'date': str(current_date)
     }
+    headers = {"Authorization": DEVICE_AUTH_CODE}
 
     # Create a new session
-    new_session = requests.post('http://35.240.193.146:5010/api/session/new', json=session_info)
+    requests.post('http://35.240.193.146:5010/api/session/new', json=session_info, headers=headers)
 
     scanner = BLEScanner()
     scanner.start()
