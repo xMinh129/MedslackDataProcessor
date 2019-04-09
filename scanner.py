@@ -14,8 +14,11 @@ config = {
 
 r = redis.StrictRedis(**config)
 
-file = open('.secret/secret.json').read()
-DEVICE_AUTH_CODE = json.loads(file)['DEVICE_AUTH_CODE']
+secret_file = open('.secret/secret.json').read()
+DEVICE_AUTH_CODE = json.loads(secret_file)['DEVICE_AUTH_CODE']
+device_list = open('configs/device_list.json').read()
+DEVICE_IDS = json.loads(device_list)['device_ids']
+DEVICE_NAMES = [device.encode('utf-8').hex().upper() for device in json.loads(device_list)['device_names']]
 
 
 class BLEScanner:
@@ -59,34 +62,42 @@ class BLEScanner:
             return
 
 
-def main():
-    # if len(sys.argv) < 2:
-    #    print('missing MAC address')
-    #    exit(0)
-    print('starting queue scanner...')
-
-    # deviceID = sys.argv[1]
-    deviceID = 'D0:2B:91:3E:5B:D0'
-    deviceNAME = 'OX'.encode('utf-8').hex().upper()
-
+def create_new_data_session(device_id):
     # Start a new session when device start
     current_date = datetime.now()
-    sessionID = deviceID + '_' + current_date.strftime('%Y%m%d%H%M')
+    session_id = device_id + '_' + current_date.strftime('%Y%m%d%H%M')
     session_info = {
-        'deviceID': deviceID,
-        'sessionID': sessionID,
+        'deviceID': device_id,
+        'sessionID': session_id,
         'date': str(current_date)
     }
     headers = {"Authorization": DEVICE_AUTH_CODE}
 
     # Create a new session
     requests.post('http://35.240.193.146:5010/api/session/new', json=session_info, headers=headers)
+    return session_id
+
+
+# mac address: device ID, data contains device name
+def is_device_authorised(mac, data):
+    if mac in DEVICE_IDS:
+        # print(mac, data)
+        if DEVICE_NAMES[DEVICE_IDS.index(mac)] in data:
+            return True
+    return False
+
+
+def main():
+    print('starting queue scanner...')
 
     scanner = BLEScanner()
     scanner.start()
 
     data = None
     i = 0
+
+    current_devices = []
+    current_session_ids = []
 
     while True:
         for line in scanner.get_lines():
@@ -95,24 +106,30 @@ def main():
                 reversed_mac = ''.join(reversed([found_mac[i:i + 2] for i in range(0, len(found_mac), 2)]))
                 mac = ':'.join(a + b for a, b in zip(reversed_mac[::2], reversed_mac[1::2]))
                 data = line[26:]
-                if mac == deviceID:
-                    # print(mac, data)
-                    if deviceNAME in data:
-                        data2 = data[20:24]
-                        # print(data2)
-                        HR = int(data2[0:2], 16)
-                        OX = int(data2[2:4], 16)
-                        print("HeartRate=", HR, "SpO2=", OX)
-                        if HR != 255:
-                            Heart_Rate = {"stats": HR, "type": 'hr', 'sessionID': sessionID,
-                                          "dateTime": str(datetime.now()), 'deviceID': deviceID}
-                            r.publish('heart_rate', json.dumps(Heart_Rate))
-                            i += 1
-                        if OX != 255:
-                            SpO2 = {"stats": OX, "type": 'spo2', 'sessionID': sessionID,
-                                    "dateTime": str(datetime.now()), 'deviceID': deviceID}
-                            r.publish('spo2', json.dumps(SpO2))
-                            i += 1
+                # check if device is in the list of authorised device
+                if is_device_authorised(mac, data):
+                    # check if device is currently scanned
+                    if mac not in current_devices:
+                        session_id = create_new_data_session(mac)
+                        current_devices.append(mac)
+                        current_session_ids.append(session_id)
+                    else:
+                        session_id = current_session_ids[current_devices.index(mac)]
+                    data2 = data[20:24]
+                    # print(data2)
+                    HR = int(data2[0:2], 16)
+                    OX = int(data2[2:4], 16)
+                    print("HeartRate=", HR, "SpO2=", OX)
+                    if HR != 255:
+                        heart_rate = {"stats": HR, "type": 'hr', 'sessionID': session_id,
+                                      "dateTime": str(datetime.now()), 'deviceID': mac}
+                        r.publish('heart_rate', json.dumps(heart_rate))
+                        i += 1
+                    if OX != 255:
+                        spo2 = {"stats": OX, "type": 'spo2', 'sessionID': session_id,
+                                "dateTime": str(datetime.now()), 'deviceID': mac}
+                        r.publish('spo2', json.dumps(spo2))
+                        i += 1
         print(i)
         scanner.stop()
         exit(0)
