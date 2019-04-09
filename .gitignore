@@ -7,7 +7,9 @@ dist/
 # Tests
 .pytest_cache/
 
-configs/
+configs/config.json
+configs/redis_config.py
+
 
 * Logging
 app.log.*
