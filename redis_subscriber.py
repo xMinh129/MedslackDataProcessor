@@ -33,6 +33,7 @@ class Listener(threading.Thread):
         self.pubsub.subscribe(channels)
         self.hr_dataset = []
         self.spo2_dataset = []
+        self.temp_dataset = []
 
     def work(self, item):
         try:
@@ -87,6 +88,30 @@ class Listener(threading.Thread):
                             print('Error in sending. Data was put back on redis queue')
                         self.spo2_dataset = []
 
+            elif item['channel'].decode("utf-8") == 'temperature':
+                self.temp_dataset.append(data_from_queue)
+                # Sending data in chunks of 100 data points per API request
+                if len(self.temp_dataset) >= 20:
+                    try:
+                        headers = {'data_type': 'temperature', 'Authorization': DEVICE_AUTH_CODE}
+                        response = requests.post('http://35.247.135.116:5010/api/stats/new',
+                                                 data=_encrypt_data(self.temp_dataset),
+                                                 headers=headers)
+                        print('Response code: ' + str(response.status_code))
+                        if response.status_code != 200:
+                            for i in self.temp_dataset:
+                                r.publish('temperature', i)
+                                print('Error in sending. Data was put back on redis queue')
+                            self.temp_dataset = []
+                        else:
+                            self.temp_dataset = []
+                    except Exception as e:
+                        print(e)
+                        for i in self.temp_dataset:
+                            r.publish('temperature', i)
+                            print('Error in sending. Data was put back on redis queue')
+                        self.temp_dataset = []
+
         except Exception as e:
             print(e)
 
@@ -100,5 +125,5 @@ class Listener(threading.Thread):
 
 
 if __name__ == "__main__":
-    client = Listener(r, ['heart_rate', 'spo2'])
+    client = Listener(r, ['heart_rate', 'spo2', 'temperature'])
     client.start()

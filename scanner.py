@@ -115,10 +115,11 @@ def main():
                         current_session_ids.append(session_id)
                     else:
                         session_id = current_session_ids[current_devices.index(mac)]
-                    data2 = data[20:24]
+                    data2 = data[20:26]
                     # print(data2)
                     HR = int(data2[0:2], 16)
                     OX = int(data2[2:4], 16)
+                    # TP = int(data2[4:6], 16)
                     print("HeartRate=", HR, "SpO2=", OX)
                     if HR != 255:
                         heart_rate = {"stats": HR, "type": 'hr', 'sessionID': session_id,
@@ -130,6 +131,10 @@ def main():
                                 "dateTime": str(datetime.now()), 'deviceID': mac}
                         r.publish('spo2', json.dumps(spo2))
                         i += 1
+                    # if TP != 255:
+                    #     temp = {"stats": TP, "type": 'temperature', 'sessionID': session_id,
+                    #                   "dateTime": str(datetime.now()), 'deviceID': mac}
+                    #     r.publish('temperature', json.dumps(temp))
         print(i)
         scanner.stop()
         exit(0)
