@@ -45,7 +45,7 @@ class Listener(threading.Thread):
                 if len(self.hr_dataset) >= 20:
                     try:
                         headers = {'data_type': 'heart_rate', 'Authorization': DEVICE_AUTH_CODE}
-                        response = requests.post('http://35.240.193.146:5010/api/stats/new',
+                        response = requests.post('http://35.247.135.116:5010/api/stats/new',
                                                  data=_encrypt_data(self.hr_dataset),
                                                  headers=headers)
                         print('Response code: ' + str(response.status_code))
@@ -69,7 +69,7 @@ class Listener(threading.Thread):
                 if len(self.spo2_dataset) >= 20:
                     try:
                         headers = {'data_type': 'spo2',  'Authorization': DEVICE_AUTH_CODE}
-                        response = requests.post('http://35.240.193.146:5010/api/stats/new',
+                        response = requests.post('http://35.247.135.116:5010/api/stats/new',
                                                  data=_encrypt_data(self.spo2_dataset),
                                                  headers=headers)
                         print('Response code: ' + str(response.status_code))
