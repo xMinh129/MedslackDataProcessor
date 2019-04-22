@@ -74,7 +74,8 @@ def create_new_data_session(device_id):
     headers = {"Authorization": DEVICE_AUTH_CODE}
 
     # Create a new session
-    requests.post('http://35.247.135.116:5010/api/session/new', json=session_info, headers=headers)
+    r = requests.post('http://35.247.135.116:5010/api/sessions/new', json=session_info, headers=headers)
+    print(r)
     return session_id
 
 
